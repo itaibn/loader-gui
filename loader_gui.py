@@ -1,4 +1,5 @@
 import tkinter as tk
+from loader_sim import interactive_parse
 
 fileHandle = open("loader.c", "r")
 loaderc = fileHandle.read()
@@ -12,6 +13,7 @@ class LoaderGUI:
         self.parent = parent
         self.panes = tk.Frame(parent)
         self.panes.pack()
+
         self.topFrame = tk.Frame(self.panes)
         self.topFrame.pack(side=tk.LEFT)
         seperator = tk.Frame(self.panes, width=2,  bd=1, relief=tk.SUNKEN);
@@ -32,19 +34,32 @@ class LoaderGUI:
         self.quit = tk.Button(self.buttonFrame, command=self.topFrame.quit,
             text="Quit")
         self.quit.pack(side=tk.LEFT)
+        self.log = ""
+        self.logBox = tk.Label(self.topFrame, text=self.log)
+        self.logBox.pack(side=tk.TOP)
+
+        self.state = tk.Label(self.topFrame, text='')
+        self.backend = interactive_parse(None, self.log)
+        self.state.configure(text=next(self.backend))
 
     def p0(self):
         self.bin = "0" + self.bin
         self.labelUpdate()
         self.program.set_focus(self.program.focus - 1)
+        self.state.configure(text=self.backend.send(False))
 
     def p1(self):
         self.bin = "1" + self.bin
         self.labelUpdate()
         self.program.set_focus(self.program.focus + 1)
+        self.state.configure(text=self.backend.send(True))
 
     def labelUpdate(self):
         self.binLabel.configure(text=self.bin)
+    
+    def log(self, out):
+        self.log += out + "\n"
+        self.logBox.configure(text=self.log)
 
 class TextLines:
     def __init__(self, parent, text=''):

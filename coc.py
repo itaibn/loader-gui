@@ -11,7 +11,7 @@ class Sort(Term):
         self.level = level
 
     def __eq__(self, other):
-        return isinstance(other, Sort) && self.level == other.level
+        return isinstance(other, Sort) and self.level == other.level
 
     def type(self, ctx):
         if self.level == 0:
@@ -19,7 +19,7 @@ class Sort(Term):
         else:
             return None
 
-    def raise(self, i):
+    def mkfree_var(self, i):
         return self
 
     def subs(self, i, x):
@@ -27,6 +27,12 @@ class Sort(Term):
 
     def eval(self):
         return self
+
+    def show(self, ctx, vargen):
+        if self.level == 0:
+            return '*'
+        else:
+            return '[]'
 
 class Var(Term):
     def __init__(self, i):
@@ -38,12 +44,12 @@ class Var(Term):
         self.id = i
 
     def __eq__(self, other):
-        return isinstance(other, Var) && self.id == other.id
+        return isinstance(other, Var) and self.id == other.id
 
     def type(self, ctx):
         return ctx[self.i]
 
-    def raise(self, i):
+    def mkfree_var(self, i):
         if self.id < i:
             return self
         else:
@@ -60,26 +66,45 @@ class Var(Term):
     def eval(self):
         return self
 
+    def show(self, ctx, vargen):
+        return ctx[self.id]
+
 class PairingTerm(Term):
     def __init__(self, fst, snd, scopeQ):
         self.args = (fst, snd)
-        if scopesQ:
+        if scopeQ:
             self.snd_scopes = 1
+        else:
+            self.snd_scopes = 0
 
     def __eq__(self, other):
-        return type(self) == type(other) && self.args == other.args
+        return type(self) == type(other) and self.args == other.args
 
-    def raise(self, i):
-        return self.remake(self.args[0].raise(i), self.args[1].raise(i +
-            self.snd_scopes))
+    def mkfree_var(self, i):
+        return self.remake(self.args[0].mkfree_var(i), self.args[1].mkfree_var(i
+            + self.snd_scopes))
 
     def subs(self, i, x):
         return self.remake(self.args[0].subs(i, x), self.args[1].subs(i +
-            self.snd_scopes, x))
+            self.snd_scopes, x.mkfree_var(0)))
 
     def eval(self):
         return self.eval_remake(self.args[0].eval(), self.args[1].eval())
 
+    def show_args(self, ctx, vargen):
+        arg0 = self.args[0].show(ctx, vargen)
+        if self.snd_scopes > 0:
+            try:
+                inner_var = next(vargen)
+            except StopIteration:
+                raise ValueError('vargen run out of variable names')
+            new_ctx = [inner_var] + ctx
+        else:
+            new_ctx = ctx
+            inner_var = None
+        arg1 = self.args[1].show(new_ctx, vargen)
+        return inner_var, arg0, arg1
+            
 class ProdType(PairingTerm):
     def __init__(self, dom, cod):
         PairingTerm.__init__(self, dom, cod, True)
@@ -89,14 +114,22 @@ class ProdType(PairingTerm):
 
     eval_remake = remake
 
+    def show(self, ctx, vargen):
+        v, d, c = self.show_args(ctx, vargen)
+        return '(forall {} : {}. {})'.format(v, d, c)
+
 class Lambda(PairingTerm):
-    def __init__(self, typ, out):
-        PairingTerm.__init__(self, typ, out, True)
+    def __init__(self, typ, inner):
+        PairingTerm.__init__(self, typ, inner, True)
 
     def remake(self, *arg):
         return Lambda(*arg)
 
     eval_remake = remake
+
+    def show(self, ctx, vargen):
+        v, t, i = self.show_args(ctx, vargen)
+        return '(\\{} : {}. {})'.format(v, t, i)
 
 class Apply(PairingTerm):
     def __init__(self, func, arg):
@@ -108,8 +141,22 @@ class Apply(PairingTerm):
     def eval_remake(self, *arg):
         return app(*arg)
 
+    def show(self, ctx, vargen):
+        _, f, x = self.show_args(ctx, vargen)
+        return '({} {})'.format(f, x)
+
 def app(func, arg):
     if isinstance(func, Lambda):
         return func.args[1].subs(0, arg).eval()
     else:
         return Apply(func, arg)
+
+def std_vargen():
+    alphabet = 'abcd'
+    for v in alphabet:
+        yield v
+    n = 0
+    while True:
+        for v in alphabet:
+            yield v + str(n)
+        n += 1
