@@ -1,0 +1,6 @@
+The files busy.tar.gz and loader.c were made by Ralph Loader. busy.tar.gz was
+downloaded from http://homepages.ihug.co.nz/~suckfish/busy/busy.tar.gz, and is
+linked from his homepage at http://homepages.ihug.co.nz/~suckfish/. loader.c is
+copied from reduced.c in the tarfile busy.tar.gz. I don't know what the
+copyright status of theses two files are, but loader.c is widely distributed
+freely and I believe my use of these files is socially acceptable.
