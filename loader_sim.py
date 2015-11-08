@@ -1,51 +1,149 @@
+#from recordclass import recordclass
 from coc import *
+
+#fullterm = recordclass('fullterm', 'ctx typ term')
+class fullterm:
+    __slots__ = ['ctx', 'typ', 'term']
+
+    def __init__(self, ctx=0, typ=0, term=0):
+        self.ctx = ctx; self.typ = typ; self.term = term
+
+t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
 
 states = ['loop', 'apply', 'new-var', 'abstract', 'make-lambda', 'scope']
 
-def interactive_parse(out=None, log=print):
+class Stack:
+    def __init__(self):
+        self.list = []
+
+    def __iter__(self):
+        return iter(self.list)
+
+    def push(self, x):
+        self.list.append(x)
+
+    def index(self, i):
+        return self.list[-1-i]
+
+    def top(self):
+        return self.index(0)
+
+    def pop(self):
+        return self.list.pop()
+
+def interactive_parse(stack, out=None, log=print):
     ctx = []
     typ = Sort(1)
     term = Sort(0)
+    t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
+    stack.push(t)
 
-    while (yield 'loop'):
+    #while (yield 'loop'):
+    while True:
+        #if (yield 'test'):
+        #    t.term = Sort(1)
+        """
         recurse_out = [None] * 3
-        yield from interactive_parse(recurse_out)
+        # Imitate 'yield from' for earlier version of python
+        #yield from interactive_parse(stack, recurse_out, log)
+        gen = interactive_parse(stack, recurse_out, log)
+        try:
+            x = yield next(gen)
+            while True:
+                x = yield gen.send(x)
+        except StopIteration:
+            pass
         alt_ctx, alt_typ, alt_term = recurse_out
+        """
+        while (yield 'loop'):
+            t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
+            stack.push(t)
+        t = stack.index(1)
+        a = stack.top()
+        alt_ctx = a.ctx
+        alt_typ = a.typ
+        alt_term = a.term
+        log('t ' + show_judgement(t))
+        log('a ' + show_judgement(a))
 
-        if alt_ctx == ctx:
-            if isinstance(alt_typ, ProdType) and alt_type.args[0] == typ and \
+        oldlen = len(t.ctx)
+        if alt_ctx == t.ctx:
+            log('equal')
+            if isinstance(t.typ, ProdType) and t.typ.args[0] == alt_typ and \
                     (yield 'apply'):
-                typ = alt_typ.args[1].subs(0, term)
-                term = app(alt_term, term)
+                t.typ = t.typ.args[1].subs(0, alt_term)
+                ap = app
+                #ap = Apply
+                t.term = ap(t.term, alt_term)
             if (yield 'new-var') and isinstance(alt_typ, Sort):
-                ctx = [alt_type] + ctx
-                typ = typ.mkfree_var(0)
-                term = term.mkfree_var(0)
-
-        if len(ctx) > 0 and (yield 'abstract'):
-            domain = ctx[0]
-            ctx = ctx[1:]
-            if (yield 'make-lambda') or not isinstance(typ, Sort):
-                typ = ProdType(domain, typ)
-                term = Lambda(domain, term)
+                t.ctx = [alt_term] + t.ctx
+                t.typ = t.typ.mkfree_var(0)
+                t.term = t.term.mkfree_var(0)
+                expect = 1
             else:
-                term = ProdType(domain, term)
+                expect = 0
+        stack.pop()
+        # This fails; figure out why later
+        #assert len(stack.top().ctx) == oldlen + expect
+        oldlen = len(stack.top().ctx)
 
-        if (yield 'scope') and isinstance(term, Sort):
-            ctx = [term] + ctx
-            typ = term.eval().mkfree_var(0)
-            term = Var(0)
+        if len(t.ctx) > 0 and (yield 'abstract'):
+            domain = t.ctx[0]
+            if (yield 'make-lambda') or not isinstance(t.typ, Sort):
+                t.typ = ProdType(domain, t.typ)
+                t.term = Lambda(domain, t.term)
+            else:
+                t.term = ProdType(domain, t.term)
+            t.ctx = t.ctx[1:]
+            expect0 = -1
+        else:
+            expect0 = 0
 
-        log(test_show(term, ctx))
+        if (yield 'scope') and isinstance(t.typ, Sort):
+            expect1 = 1
+            t.ctx = [t.term] + t.ctx
+            t.typ = t.term.eval().mkfree_var(0)
+            t.term = Var(0)
+            log('scoped ' + show_judgement(t))
+        else:
+            expect1 = 0
+        assert len(stack.top().ctx) == oldlen + expect0 + expect1
+
+        #log('it ' + test_show(t.ctx, t.typ, t.term))
 
     if out is not None:
-        out[0] = ctx
-        out[1] = typ
-        out[2] = term
+        out[0] = t.ctx
+        out[1] = t.typ
+        out[2] = t.term
+    #log('end ' + test_show(t.ctx, t.typ, t.term))
 
-def test_show(term, ctx):
-    v = std_vargen()
-    vctx = []
-    for _ in range(len(ctx)):
-        vctx = [next(v)] + vctx
-    return term.show(vctx, v)
+def test_show(ctx, typ, term):
+    """
+    vargen = std_vargen()
+    ctx_var = []
+    ctx_str = []
+    for typ in reversed(ctx):
+        typ_str = typ.show(ctx_var, vargen)
+        var = next(vargen)
+        ctx_var.append(var)
+        ctx_str.append('{:s}: {:s}'.format(var, ctx_str))
+
+    term_str = term.show(ctx_var, vargen)
+    typ_str = typ.show(ctx_var, vargen)
+    return '{:s} |- {:s} : {:s}'.format(', '.join(ctx_str), term_str, typ_str)
+    """
+    return show_judgement(fullterm(ctx, typ, term))
+
+def show_judgement(t):
+    vargen = std_vargen()
+    ctx_var = []
+    ctx_str = []
+    for typ in reversed(t.ctx):
+        typ_str = typ.show(ctx_var, vargen)
+        var = next(vargen)
+        ctx_var = [var] + ctx_var
+        ctx_str.append('{:s}: {:s}'.format(var, typ_str))
+
+    term_str = t.term.show(ctx_var, vargen)
+    typ_str = t.typ.show(ctx_var, vargen)
+    return '{:s} |- {:s} : {:s}'.format(', '.join(ctx_str), term_str, typ_str)
