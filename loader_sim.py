@@ -67,6 +67,7 @@ def interactive_parse(stack, out=None, log=print):
         log('a ' + show_judgement(a))
 
         oldlen = len(t.ctx)
+        log('ol ' + str(oldlen))
         if alt_ctx == t.ctx:
             log('equal')
             if isinstance(t.typ, ProdType) and t.typ.args[0] == alt_typ and \
@@ -82,9 +83,12 @@ def interactive_parse(stack, out=None, log=print):
                 expect = 1
             else:
                 expect = 0
+        else:
+            expect = 0
         stack.pop()
+        log('expect ' + str(expect))
         # This fails; figure out why later
-        #assert len(stack.top().ctx) == oldlen + expect
+        assert len(stack.top().ctx) == oldlen + expect
         oldlen = len(stack.top().ctx)
 
         if len(t.ctx) > 0 and (yield 'abstract'):
