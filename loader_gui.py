@@ -145,7 +145,14 @@ class GUIStack(Stack):
     def update(self):
         objs = []
         for t in self:
-            objs.append(test_show(t.ctx, t.typ, t.term))
+            t_str = test_show(t.ctx, t.typ, t.term)
+            # Add indentation
+            t_str_ind = t_str[:100]
+            t_str = t_str[100:]
+            while len(t_str) > 0:
+                t_str_ind = t_str_ind + "\n\t" + t_str[:100]
+                t_str = t_str[100:]
+            objs.append(t_str_ind)
         txt = '\n'.join(objs)
         self.label.configure(text=txt)
 
