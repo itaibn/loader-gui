@@ -34,6 +34,9 @@ class Sort(Term):
         else:
             return '[]'
 
+    def __repr__(self):
+        return 'S{}'.format(self.level)
+
 class Var(Term):
     def __init__(self, i):
         if type(i) is not int:
@@ -68,6 +71,9 @@ class Var(Term):
 
     def show(self, ctx, vargen):
         return ctx[self.id]
+
+    def __repr__(self):
+        return '[{}]'.format(self.id)
 
 class PairingTerm(Term):
     def __init__(self, fst, snd, scopeQ):
@@ -104,6 +110,9 @@ class PairingTerm(Term):
             inner_var = None
         arg1 = self.args[1].show(new_ctx, vargen)
         return inner_var, arg0, arg1
+
+    def __repr__(self):
+        return '<{}>{}'.format(type(self).__name__, self.args)
             
 class ProdType(PairingTerm):
     def __init__(self, dom, cod):
