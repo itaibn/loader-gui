@@ -54,6 +54,8 @@ class LoaderGUI:
 
     def p0(self):
         self.bin = "0" + self.bin
+        if (len(self.bin) + 1) % 31 == 0:
+            self.bin = "\n" + self.bin
         self.labelUpdate()
         self.program.set_focus(self.program.focus - 1)
         self.state.configure(text=self.backend.send(False))
@@ -61,6 +63,8 @@ class LoaderGUI:
 
     def p1(self):
         self.bin = "1" + self.bin
+        if (len(self.bin) + 1) % 31 == 0:
+            self.bin = "\n" + self.bin
         self.labelUpdate()
         self.program.set_focus(self.program.focus + 1)
         self.state.configure(text=self.backend.send(True))
