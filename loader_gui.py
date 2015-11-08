@@ -5,9 +5,20 @@ fileHandle = open("loader.c", "r")
 loaderc = fileHandle.read()
 fileHandle.close()
 
+# Line numbers in loader.c for each of the stages where the program seeks a bit
+stage_lines = {
+    'loop': 45,
+    'apply': 51,
+    'new-var': 53,
+    'abstract': 57,
+    'make-lambda': 59,
+    'scope': 63}
+
 loaderc_lines = loaderc.split('\n')
 #loaderc_d = '\n'.join(loaderc_lines[:8] + ['...'] + loaderc_lines[38:-3])
 loaderc_d = '\n'.join(loaderc_lines[39:-4])
+for stage in stage_lines:
+    stage_lines[stage] -= 39
 
 class LoaderGUI:
     def __init__(self, parent):
@@ -53,24 +64,19 @@ class LoaderGUI:
         self.state.configure(text=next(self.backend))
 
     def p0(self):
-        self.bin = "0" + self.bin
-        if (len(self.bin) + 1) % 31 == 0:
-            self.bin = "\n" + self.bin
-        self.labelUpdate()
-        self.program.set_focus(self.program.focus - 1)
-        self.state.configure(text=self.backend.send(False))
-        self.more()
+        self.add_bit(0)
 
     def p1(self):
-        self.bin = "1" + self.bin
+        self.add_bit(1)
+
+    def add_bit(self, bit):
+        self.bin = str(bit) + self.bin
         if (len(self.bin) + 1) % 31 == 0:
             self.bin = "\n" + self.bin
         self.labelUpdate()
-        self.program.set_focus(self.program.focus + 1)
-        self.state.configure(text=self.backend.send(True))
-        self.more()
-
-    def more(self):
+        new_state = self.backend.send(bit > 0)
+        self.program.set_focus(stage_lines[new_state])
+        self.state.configure(text=new_state)
         t = self.stack.top()
         self.log("({}) {}".format(len(self.stack.list), test_show(t.ctx, t.typ,
             t.term)))
