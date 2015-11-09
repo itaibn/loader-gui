@@ -1,5 +1,6 @@
 import tkinter as tk
 from loader_sim import *#interactive_parse, Stack
+import pyperclip
 
 fileHandle = open("loader.c", "r")
 loaderc = fileHandle.read()
@@ -49,6 +50,9 @@ class LoaderGUI:
         self.b0.pack(side=tk.LEFT)
         self.b1 = tk.Button(self.buttonFrame, command=self.p1, text="1")
         self.b1.pack(side=tk.LEFT)
+        self.copy = tk.Button(self.buttonFrame, command=self.copy_to_clipboard,
+            text="Copy to clipboard")
+        self.copy.pack(side=tk.LEFT)
         self.quit = tk.Button(self.buttonFrame, command=self.mainFrame.quit,
             text="Quit")
         self.quit.pack(side=tk.LEFT)
@@ -62,6 +66,9 @@ class LoaderGUI:
         self.stack = GUIStack(self.stackSpace)
         self.backend = interactive_parse(self.stack, None, self.log)
         self.state.configure(text=next(self.backend))
+
+    def copy_to_clipboard(self):
+        pyperclip.copy(self.bin)
 
     def p0(self):
         self.add_bit(0)
