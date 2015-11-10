@@ -10,7 +10,8 @@ class fullterm:
 
 t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
 
-states = ['loop', 'apply', 'new-var', 'abstract', 'make-lambda', 'scope']
+states = ['warmup', 'loop', 'apply', 'new-var', 'abstract', 'make-lambda',
+    'scope']
 
 class Stack:
     def __init__(self):
@@ -37,6 +38,8 @@ def interactive_parse(stack, out=None, log=print):
     term = Sort(0)
     t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
     stack.push(t)
+
+    yield 'warmup'
 
     #while (yield 'loop'):
     while True:

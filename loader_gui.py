@@ -8,6 +8,7 @@ fileHandle.close()
 
 # Line numbers in loader.c for each of the stages where the program seeks a bit
 stage_lines = {
+    'warmup': 45,
     'loop': 45,
     'apply': 51,
     'new-var': 53,
@@ -31,7 +32,8 @@ class LoaderGUI:
         self.mainFrame.pack(side=tk.LEFT)
         seperator = tk.Frame(self.panes, width=2,  bd=1, relief=tk.SUNKEN);
         seperator.pack(side=tk.LEFT, fill=tk.Y, padx=2)
-        self.program = LineFocus(self.panes, 5, text=loaderc_d)
+        self.program = LineFocus(self.panes, stage_lines['warmup'],
+            text=loaderc_d)
         self.program.pack(side=tk.LEFT)
         #self.program.line_configure(3, foreground='red')
         seperator = tk.Frame(self.panes, width=2,  bd=1, relief=tk.SUNKEN);
