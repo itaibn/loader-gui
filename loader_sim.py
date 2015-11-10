@@ -73,11 +73,11 @@ def interactive_parse(stack, out=None, log=print):
             if isinstance(t.typ, ProdType) and t.typ.args[0] == alt_typ and \
                     (yield 'apply'):
                 t.typ = t.typ.args[1].subs(0, alt_term)
-                ap = app
-                #ap = Apply
+                #ap = app
+                ap = Apply
                 t.term = ap(t.term, alt_term)
             if (yield 'new-var') and isinstance(alt_typ, Sort):
-                t.ctx = [alt_term] + t.ctx
+                t.ctx = [alt_term.eval()] + t.ctx
                 t.typ = t.typ.mkfree_var(0)
                 t.term = t.term.mkfree_var(0)
                 expect = 1
@@ -105,7 +105,7 @@ def interactive_parse(stack, out=None, log=print):
 
         if (yield 'scope') and isinstance(t.typ, Sort):
             expect1 = 1
-            t.ctx = [t.term] + t.ctx
+            t.ctx = [t.term.eval()] + t.ctx
             t.typ = t.term.eval().mkfree_var(0)
             t.term = Var(0)
             log('scoped ' + show_judgement(t))
