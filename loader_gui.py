@@ -55,6 +55,8 @@ class LoaderGUI:
         self.b0.pack(side=tk.LEFT)
         self.b1 = tk.Button(self.buttonFrame, command=self.p1, text="1")
         self.b1.pack(side=tk.LEFT)
+        self.undo = tk.Button(self.buttonFrame, command=self.undo, text="Undo")
+        self.undo.pack(side=tk.LEFT)
         self.copy = tk.Button(self.buttonFrame, command=self.copy_to_clipboard,
             text="Copy to clipboard")
         self.copy.pack(side=tk.LEFT)
@@ -81,12 +83,17 @@ class LoaderGUI:
     def p1(self):
         self.add_bit(1)
 
-    def add_bit(self, bit):
+    def add_bit(self, bit, update_gui=True):
         self.bin = str(bit) + self.bin
         if (len(self.bin) + 1) % 31 == 0:
             self.bin = "\n" + self.bin
-        self.labelUpdate()
         new_state = self.backend.send(bit > 0)
+        if update_gui:
+            self.update_gui(new_state)
+        return new_state
+
+    def update_gui(self, new_state):
+        self.labelUpdate()
         self.program.set_focus(stage_lines[new_state])
         self.state.configure(text=new_state)
         t = self.stack.top()
@@ -101,6 +108,19 @@ class LoaderGUI:
         self.logtext += out + "\n"
         self.logBox.configure(text=self.logtext)
         print(out)
+
+    def undo(self):
+        """This implementation is ugly"""
+        newbin = self.bin.strip()[1:]
+        self.bin = ""
+        self.stack.list = []
+        self.backend = interactive_parse(self.stack, None, self.log)
+        state = next(self.backend)
+        for c in reversed(newbin):
+            if c == "\n":
+                continue
+            state = self.add_bit(int(c), update_gui=False)
+        self.update_gui(state)
 
 class TextLines:
     def __init__(self, parent, text=''):
@@ -143,6 +163,7 @@ class GUIStack(Stack):
         self.label = tk.Label(self.parent)
         self.label.pack(side=tk.TOP)
         self.update()
+        #self.history = [self.copy()]
 
     def do_and_update(func):
         def new_func(self, *arg, **key):

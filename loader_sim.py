@@ -7,6 +7,9 @@ class judgement:
     def __init__(self, ctx=0, typ=0, term=0):
         self.ctx = ctx; self.typ = typ; self.term = term
 
+    def copy(self):
+        return judgement(ctx=self.ctx, typ=self.typ, term=self.term)
+
 t = judgement(ctx=[], typ=Sort(1), term=Sort(0))
 
 states = ['warmup', 'loop', 'apply', 'new-var', 'abstract', 'make-lambda',
@@ -30,6 +33,9 @@ class Stack:
 
     def pop(self):
         return self.list.pop()
+
+    def copy(self):
+        return [j.copy() for j in self.list]
 
 def interactive_parse(stack, out=None, log=print):
     ctx = []
