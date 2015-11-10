@@ -1,14 +1,13 @@
 #from recordclass import recordclass
 from coc import *
 
-#fullterm = recordclass('fullterm', 'ctx typ term')
-class fullterm:
+class judgement:
     __slots__ = ['ctx', 'typ', 'term']
 
     def __init__(self, ctx=0, typ=0, term=0):
         self.ctx = ctx; self.typ = typ; self.term = term
 
-t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
+t = judgement(ctx=[], typ=Sort(1), term=Sort(0))
 
 states = ['warmup', 'loop', 'apply', 'new-var', 'abstract', 'make-lambda',
     'scope']
@@ -36,7 +35,7 @@ def interactive_parse(stack, out=None, log=print):
     ctx = []
     typ = Sort(1)
     term = Sort(0)
-    t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
+    t = judgement(ctx=[], typ=Sort(1), term=Sort(0))
     stack.push(t)
 
     yield 'warmup'
@@ -59,7 +58,7 @@ def interactive_parse(stack, out=None, log=print):
         alt_ctx, alt_typ, alt_term = recurse_out
         """
         while (yield 'loop'):
-            t = fullterm(ctx=[], typ=Sort(1), term=Sort(0))
+            t = judgement(ctx=[], typ=Sort(1), term=Sort(0))
             stack.push(t)
         t = stack.index(1)
         a = stack.top()
@@ -139,7 +138,7 @@ def test_show(ctx, typ, term):
     typ_str = typ.show(ctx_var, vargen)
     return '{:s} |- {:s} : {:s}'.format(', '.join(ctx_str), term_str, typ_str)
     """
-    return show_judgement(fullterm(ctx, typ, term))
+    return show_judgement(judgement(ctx, typ, term))
 
 def show_judgement(t):
     vargen = std_vargen()
