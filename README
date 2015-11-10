@@ -1,6 +1,12 @@
+A Calculus of Constructions GUI term constructor
+
+To run: You need Python 3.* installed (I'm not sure if all subversions work; I
+tested this with Python 3.2). Then simply run "python loader_gui.py" in the
+command line. You need to PIP package pyperclip installed for full
+functionality.
+
 The files busy.tar.gz and loader.c were made by Ralph Loader. busy.tar.gz was
 downloaded from http://homepages.ihug.co.nz/~suckfish/busy/busy.tar.gz, and is
 linked from his homepage at http://homepages.ihug.co.nz/~suckfish/. loader.c is
-copied from reduced.c in the tarfile busy.tar.gz. I don't know what the
-copyright status of theses two files are, but loader.c is widely distributed
-freely and I believe my use of these files is socially acceptable.
+copied from reduced.c in the tarfile busy.tar.gz. These files are both public
+domain (source: personal correspondence).

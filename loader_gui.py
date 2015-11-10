@@ -1,6 +1,9 @@
 import tkinter as tk
 from loader_sim import *#interactive_parse, Stack
-import pyperclip
+try:
+    import pyperclip
+except ImportError:
+    print("Install pyperclip if you want to use the clipboard functionality")
 
 fileHandle = open("loader.c", "r")
 loaderc = fileHandle.read()
