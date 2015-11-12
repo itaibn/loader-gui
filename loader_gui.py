@@ -1,5 +1,5 @@
 import tkinter as tk
-from loader_sim import *#interactive_parse, Stack
+from loader_sim import *
 try:
     import pyperclip
 except ImportError:
@@ -71,7 +71,7 @@ class LoaderGUI:
         self.state = tk.Label(self.mainFrame, text='')
         self.state.pack(side=tk.TOP)
         self.stack = GUIStack(self.stackSpace)
-        self.backend = interactive_parse(self.stack, None, self.log)
+        self.backend = interactive_parse(self.stack, self.log)
         self.state.configure(text=next(self.backend))
 
     def copy_to_clipboard(self):
@@ -97,8 +97,6 @@ class LoaderGUI:
         self.program.set_focus(stage_lines[new_state])
         self.state.configure(text=new_state)
         t = self.stack.top()
-        self.log("({}) {}".format(len(self.stack.list), test_show(t.ctx, t.typ,
-            t.term)))
         self.stack.update()
 
     def labelUpdate(self):
@@ -114,7 +112,7 @@ class LoaderGUI:
         newbin = self.bin.strip()[1:]
         self.bin = ""
         self.stack.list = []
-        self.backend = interactive_parse(self.stack, None, self.log)
+        self.backend = interactive_parse(self.stack, self.log)
         state = next(self.backend)
         for c in reversed(newbin):
             if c == "\n":
@@ -178,7 +176,7 @@ class GUIStack(Stack):
     def update(self):
         objs = []
         for t in self:
-            t_str = test_show(t.ctx, t.typ, t.term)
+            t_str = show_judgement(t)
             # Add indentation
             t_str_ind = t_str[:100]
             t_str = t_str[100:]
