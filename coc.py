@@ -174,7 +174,7 @@ def app(func, arg):
         return Apply(func, arg)
 
 def std_vargen():
-    alphabet = 'abcd'
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
     for v in alphabet:
         yield v
     n = 0
