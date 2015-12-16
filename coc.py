@@ -140,6 +140,9 @@ class ProdType(PairingTerm):
         v, d, c = self.show_args(ctx, vargen)
         return '(forall {} : {}. {})'.format(v, d, c)
 
+    def type_with_arg(self, arg):
+        return self.args[1].subs(0, arg).eval()
+
 class Lambda(PairingTerm):
     def __init__(self, typ, inner):
         PairingTerm.__init__(self, typ, inner, True)

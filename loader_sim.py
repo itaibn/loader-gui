@@ -59,7 +59,7 @@ def interactive_parse(stack, log=print):
         if alt_ctx == t.ctx:
             if isinstance(t.typ, ProdType) and t.typ.args[0] == alt_typ and \
                     (yield 'apply'):
-                t.typ = t.typ.args[1].subs(0, alt_term)
+                t.typ = t.typ.type_with_arg(alt_term)
                 #ap = app
                 ap = Apply
                 t.term = ap(t.term, alt_term)
