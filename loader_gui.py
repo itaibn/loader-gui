@@ -85,7 +85,7 @@ class LoaderGUI:
 
     def add_bit(self, bit, update_gui=True):
         self.bin = str(bit) + self.bin
-        if (len(self.bin) + 1) % 31 == 0:
+        if (len(self.bin) + 1) % 61 == 0:
             self.bin = "\n" + self.bin
         new_state = self.backend.send(bit > 0)
         if update_gui:
